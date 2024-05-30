@@ -1,12 +1,13 @@
 import streamlit as st
 from dao.implementation import Implementation
 from exception.custom_exceptions import AuthenticationError
+import matplotlib.pyplot as plt
 
 
 def main():
     st.title("Fitness Tracking Application")
 
-    menu = ["Login", "Register", "Log Workout", "View Workouts"]
+    menu = ["Login", "Register", "Log Workout", "View Workouts", "Stats"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     implementation = Implementation()
@@ -56,7 +57,30 @@ def main():
         else:
             st.subheader("View Workouts")
             df = implementation.fetch_workouts(user_id)
-            st.dataframe(df)
+            if not df.empty:
+                st.table(df)
+            else:
+                st.write("No workouts logged yet")
+
+    elif choice == "Stats":
+        user_id = st.session_state.get("user_id")
+        if not user_id:
+            st.warning("Please login first")
+        else:
+            st.subheader("Workout Statistics")
+            df = implementation.fetch_workouts(user_id)
+            if not df.empty:
+                st.write("Total Workouts:", len(df))
+                st.write("Average Workout Duration:", df["duration"].mean())
+                intensity_counts = df["intensity"].value_counts()
+                plt.bar(intensity_counts.index, intensity_counts.values)
+                plt.xlabel("Intensity")
+                plt.ylabel("Count")
+                plt.title("Workout Intensity Distribution")
+                st.pyplot(plt)
+
+            else:
+                st.write("No workouts logged yet")
 
 
 if __name__ == "__main__":
