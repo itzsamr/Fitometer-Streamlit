@@ -2,15 +2,21 @@ import streamlit as st
 import pyodbc
 import pandas as pd
 import hashlib
+import configparser
 
 
 def get_db_connection():
-    conn = pyodbc.connect(
-        "Driver={SQL Server};"
-        "Server=SAMAR\MSSQLSERVER01;"
-        "Database=FitometerDB;"
-        "Trusted_Connection=yes;"
+    config = configparser.ConfigParser()
+    config.read(
+        "C:/Users/91915/OneDrive - Valliammai Engineering College/Desktop/Fitometer/config.properties"
     )
+
+    server_name = config.get("DATABASE", "server")
+    database_name = config.get("DATABASE", "database")
+    driver = config.get("DATABASE", "driver")
+
+    conn_str = f"Driver={driver};Server={server_name};Database={database_name};Trusted_Connection=yes;"
+    conn = pyodbc.connect(conn_str)
     return conn
 
 
@@ -25,7 +31,7 @@ def authenticate_user(username, password):
     result = cursor.fetchone()
     conn.close()
     if result and hash_password(password) == result[1]:
-        return result[0]  # Return user_id if authentication is successful
+        return result[0]
     return None
 
 
