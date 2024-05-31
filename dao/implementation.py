@@ -57,6 +57,17 @@ class Implementation:
     def fetch_workouts(self, user_id):
         conn = self.conn_util.get_db_connection()
         query = "SELECT workout_type, duration, intensity, log_date FROM workouts WHERE user_id=?"
-        df = pd.read_sql(query, conn, params=(user_id,))
+        cursor = conn.cursor()
+        cursor.execute(query, (user_id,))
+        rows = cursor.fetchall()
         conn.close()
-        return df
+        workouts = []
+        for row in rows:
+            workout = {
+                "workout_type": row[0],
+                "duration": row[1],
+                "intensity": row[2],
+                "log_date": row[3],
+            }
+            workouts.append(workout)
+        return workouts
